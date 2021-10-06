@@ -1,3 +1,56 @@
+<?php
+include_once('connect.php');
+
+session_start();
+
+if(isset($_SESSION['admin_id'])){
+    $admin_id=$_SESSION['admin_id'];
+}else{
+    header('location:login_admin.php');
+}
+
+if(isset($_POST['submit'])){
+    $fullname=$_POST['fullname'];
+    $phone=$_POST['phone'];
+    $email=$_POST['email'];
+    $password=$_POST['password'];
+    $cpassword=$_POST['cpassword'];
+
+    $q="SELECT * FROM `admin` WHERE `email`='$email'";
+    $r=mysqli_query($dbc,$q);
+    $num=mysqli_num_rows($r);
+
+    if($num==0){
+        if($password==$cpassword){
+            $password=md5($password);
+
+            $token = 'qwertzuiopasdfghjklyxcvbnmQWERTZUIOPASDFGHJKLYXCVBNM0123456789!$/()*';
+			$token = str_shuffle($token);
+            $token = substr($token, 0, 30);
+            $message="
+            Veuillez cliquer sur le lien ci-dessous:
+            http://localhost/stage/backend/confirm_admin.php?email=".$email."&token=".$token;
+
+            if(mail($email,"Resto",$message)){
+                $q="INSERT INTO `admin`(`fullname`, `phone`, `email`, `password`, `token`) VALUES ('$fullname', '$phone', '$email', '$password', '$token')";
+              $r=mysqli_query($dbc,$q);
+              if($r){
+                header('Location: admins.php?success');
+              }else{
+                $msg="Il y a un problème pendant le processus d'inscription";
+              }
+            }
+
+        }else{
+            $msg="Les deux mots de passe ne sont pas identiques";
+        }
+    }else{
+        $msg="Ce email est déja utilisé";
+    }
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,7 +96,13 @@
                     <!-- Page Heading -->
                     <h1 class="h3 mb-4 text-gray-800">Ajouter un administrateur</h1>
 
-                    <form action="/action_page.php">
+                    <?php if(isset($msg)){ ?>
+                                        <div class="alert alert-info">
+                                        <strong>Info!</strong> <?= $msg ?>
+                                        </div>
+                                    <?php } ?>
+
+                    <form action="add_admin.php" method="post">
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Nom complet" name="fullname" required>
                     </div>

@@ -1,3 +1,46 @@
+<?php
+include_once('connect.php');
+
+session_start();
+
+if(isset($_SESSION['admin_id'])){
+    header('location:dashboard.php');
+}
+
+if(isset($_POST['submit'])){
+    $email=$_POST['email'];
+    $password=$_POST['password'];
+
+    $password=md5($password);
+
+    $q="SELECT * FROM `admin` WHERE `email`='$email' and `password`='$password'";
+    $r=mysqli_query($dbc,$q);
+    $num=mysqli_num_rows($r);
+
+    if($num==1){
+        $row=mysqli_fetch_assoc($r);
+
+        if($row['active']==1){
+            if($row['archived']==0){
+                $_SESSION['admin_id']=$row['id'];
+                $_SESSION['admin_fullname']=$row['fullname'];
+                $_SESSION['admin_phone']=$row['phone'];
+                $_SESSION['admin_email']=$row['email'];
+                header('location:dashboard.php');
+            }else{
+                $msg="dsl ce compte est supprimé";
+            }
+        }else{
+            $msg="svp confirmer votre email";
+        }
+
+    }else{
+        $msg="Erreur dans l'adresse mail ou dans mot de passe";
+    }
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -40,7 +83,20 @@
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Connexion administrateur</h1>
                                     </div>
-                                    <form class="user">
+
+                                    <?php if(isset($msg)){ ?>
+                                        <div class="alert alert-info">
+                                        <strong>Info!</strong> <?= $msg ?>
+                                        </div>
+                                    <?php } ?>
+
+                                    <?php if(isset($_GET['success'])){ ?>
+                                        <div class="alert alert-success">
+                                        <strong>Info!</strong> Votre compte a été activé, vous pouvez vous connecter maintenant
+                                        </div>
+                                    <?php } ?>
+
+                                    <form class="user" action="login_admin.php" method="post">
                                         <div class="form-group">
                                             <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required>
                                         </div>
