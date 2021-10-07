@@ -5,6 +5,9 @@ session_start();
 
 if(isset($_SESSION['admin_id'])){
     $admin_id=$_SESSION['admin_id'];
+    if($admin_id!=1){
+        header('location:dashboard.php');
+    }
 }else{
     header('location:login_admin.php');
 }
@@ -55,8 +58,16 @@ if(isset($_SESSION['admin_id'])){
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
 
+                                    
+
                     <!-- Page Heading -->
                     <h1 class="h3 mb-2 text-gray-800">Administrateurs</h1>
+
+                    <?php if(isset($_GET['success'])){ ?>
+                                        <div class="alert alert-success">
+                                        <strong>Info!</strong> Inscription terminée avec succès, l'e-mail doit être activé
+                                        </div>
+                                    <?php } ?>
 
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">

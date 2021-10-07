@@ -1,3 +1,46 @@
+<?php
+include_once('connect.php');
+
+session_start();
+
+if(isset($_SESSION['user_id'])){
+    header('location:myDashboard.php');
+}
+
+if(isset($_POST['submit'])){
+    $email=$_POST['email'];
+    $password=$_POST['password'];
+
+    $password=md5($password);
+
+    $q="SELECT * FROM `user` WHERE `email`='$email' and `password`='$password'";
+    $r=mysqli_query($dbc,$q);
+    $num=mysqli_num_rows($r);
+
+    if($num==1){
+        $row=mysqli_fetch_assoc($r);
+
+        if($row['active']==1){
+            if($row['archived']==0){
+                $_SESSION['user_id']=$row['id'];
+                $_SESSION['user_fullname']=$row['fullname'];
+                $_SESSION['user_phone']=$row['phone'];
+                $_SESSION['user_email']=$row['email'];
+                header('location:myDashboard.php');
+            }else{
+                $msg="dsl ce compte est supprimé";
+            }
+        }else{
+            $msg="svp confirmer votre email";
+        }
+
+    }else{
+        $msg="Erreur dans l'adresse mail ou dans mot de passe";
+    }
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -40,7 +83,26 @@
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Connexion utilisateur</h1>
                                     </div>
-                                    <form class="user">
+
+                                    <?php if(isset($msg)){ ?>
+                                        <div class="alert alert-info">
+                                        <strong>Info!</strong> <?= $msg ?>
+                                        </div>
+                                    <?php } ?>
+
+                                    <?php if(isset($_GET['success'])){ ?>
+                                        <div class="alert alert-success">
+                                        <strong>Info!</strong> Votre compte a été activé, vous pouvez vous connecter maintenant
+                                        </div>
+                                    <?php } ?>
+
+                                    <?php if(isset($_GET['pass_change'])){ ?>
+                                        <div class="alert alert-success">
+                                        <strong>Info!</strong> Mot de passe modifié avec succès, vous pouvez vous connecter maintenant
+                                        </div>
+                                    <?php } ?>
+
+                                    <form class="user" action="login_user.php" method="post">
                                         <div class="form-group">
                                             <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required>
                                         </div>
@@ -51,7 +113,7 @@
                                     </form>
                                     <hr>
                                     <div class="text-center">
-                                        <a class="small" href="forgot-password.php">Mot de passe oublié?</a>
+                                        <a class="small" href="forgot-password_user.php">Mot de passe oublié?</a>
                                     </div>
                                     <div class="text-center">
                                         <a class="small" href="index.php">Page d'accueil</a>

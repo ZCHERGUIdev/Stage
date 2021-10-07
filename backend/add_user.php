@@ -1,3 +1,56 @@
+<?php
+include_once('connect.php');
+
+session_start();
+
+if(isset($_SESSION['admin_id'])){
+    $admin_id=$_SESSION['admin_id'];
+}else{
+    header('location:login_admin.php');
+}
+
+if(isset($_POST['submit'])){
+    $fullname=$_POST['fullname'];
+    $phone=$_POST['phone'];
+    $email=$_POST['email'];
+    $password=$_POST['password'];
+    $cpassword=$_POST['cpassword'];
+
+    $q="SELECT * FROM `user` WHERE `email`='$email'";
+    $r=mysqli_query($dbc,$q);
+    $num=mysqli_num_rows($r);
+
+    if($num==0){
+        if($password==$cpassword){
+            $password=md5($password);
+
+            $token = 'qwertzuiopasdfghjklyxcvbnmQWERTZUIOPASDFGHJKLYXCVBNM0123456789!$/()*';
+			$token = str_shuffle($token);
+            $token = substr($token, 0, 30);
+            $message="
+            Veuillez cliquer sur le lien ci-dessous:
+            http://localhost/stage/backend/confirm_user.php?email=".$email."&token=".$token;
+
+            if(mail($email,"Resto",$message)){
+                $q="INSERT INTO `user`(`fullname`, `phone`, `email`, `password`, `token`) VALUES ('$fullname', '$phone', '$email', '$password', '$token')";
+              $r=mysqli_query($dbc,$q);
+              if($r){
+                header('Location: users.php?success');
+              }else{
+                $msg="Il y a un problème pendant le processus d'inscription";
+              }
+            }
+
+        }else{
+            $msg="Les deux mots de passe ne sont pas identiques";
+        }
+    }else{
+        $msg="Ce email est déja utilisé";
+    }
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,7 +96,15 @@
                     <!-- Page Heading -->
                     <h1 class="h3 mb-4 text-gray-800">Ajouter un utilisateur</h1>
 
-                    <form action="/action_page.php">
+                                    <?php if(isset($msg)){ ?>
+                                        <div class="alert alert-info">
+                                        <strong>Info!</strong> <?= $msg ?>
+                                        </div>
+                                    <?php } ?>
+
+                                    
+
+                    <form action="add_user.php" method="post">
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Nom complet" name="fullname" required>
                     </div>
@@ -83,26 +144,6 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>

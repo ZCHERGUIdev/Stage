@@ -7,30 +7,36 @@ if(isset($_SESSION['user_id'])){
     header('location:myDashboard.php');
 }
 
-if(isset($_POST['submit'])){
-    $email=$_POST['email'];
+if (!isset($_GET['email']) || !isset($_GET['token'])) {
+    header('Location: forgot-password_user.php?error');
+} else {
+        $email = $_GET['email'];
+        $token = $_GET['token'];
 
-    $q="SELECT * FROM `user` WHERE `email`='$email' and archived=0";
-    //echo $q; exit();
-    $r=mysqli_query($dbc,$q);
-    $num=mysqli_num_rows($r);
+        $q="SELECT * FROM `user` WHERE `email`='$email' and `token`='$token'";
+        $r=mysqli_query($dbc,$q);
+        $num=mysqli_num_rows($r);
 
-    if($num==1){
-        $row=mysqli_fetch_assoc($r);
-
-        $token=$row['token'];
-        $message="
-            Veuillez cliquer sur le lien ci-dessous:
-            http://localhost/stage/backend/reset_password_user.php?email=".$email."&token=".$token;
-        
-            if(mail($email,"Resto",$message)){
-                header('Location: forgot-password_user.php?success');
+        if($num==1){
+            if(isset($_POST['submit'])){
+                $password=$_POST['password'];
+                $cpassword=$_POST['cpassword'];
+              
+                    if($password==$cpassword){
+                      $password=md5($password);
+                      $q="UPDATE `user` SET `password`='$password' WHERE email='$email'";
+                      $r=mysqli_query($dbc,$q);
+                      //$msg="Le mot de passe a été changé avec succès";
+                      header('Location: login_user.php?pass_change');
+                    }else{
+                      $msg="Les deux mots de passe ne sont pas identiques";
+                    }
               }
+        }else{
+            header('Location: forgot-password_user.php?error');
+        }
 
-    }else{
-        $msg="Ce compte n'existe pas";
-    }
-
+        
 }
 ?>
 
@@ -78,23 +84,30 @@ if(isset($_POST['submit'])){
                                         <p class="mb-4">Nous comprenons, il se passe des choses. Entrez simplement votre adresse e-mail ci-dessous et nous vous enverrons un lien pour réinitialiser votre mot de passe !</p>
                                     </div>
 
+                                    <?php if(isset($msg)){ ?>
+                                        <div class="alert alert-info">
+                                        <strong>Info!</strong> <?= $msg ?>
+                                        </div>
+                                    <?php } ?>
+
                                     <?php if(isset($_GET['success'])){ ?>
                                         <div class="alert alert-success">
                                         <strong>Info!</strong> Le lien de récupération du mot de passe a été envoyé, vérifiez votre email
                                         </div>
                                     <?php } ?>
 
-                                    <?php if(isset($_GET['error'])){ ?>
-                                        <div class="alert alert-danger">
-                                        <strong>Info!</strong> Faites attention
-                                        </div>
-                                    <?php } ?>
+                                    
 
-                                    <form class="user" action="forgot-password_user.php" method="post">
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required>
+                                    <form class="user" action="reset_password_user.php?email=<?= $email ?>&token=<?= $token ?>" method="post">
+
+                                    <div class="form-group">
+                                            <input type="password" class="form-control form-control-user" placeholder="Nouveau mot de passe" name="password" required>
                                         </div>
-                                        <input type="submit" name="submit" class="btn btn-primary btn-user btn-block" value="Réinitialiser le mot de passe">
+                                        <div class="form-group">
+                                            <input type="password" class="form-control form-control-user" placeholder="Confirmation mot de passe" name="cpassword" required>
+                                        </div>
+                                        
+                                        <input type="submit" name="submit" class="btn btn-success btn-user btn-block" value="Changer mot de passe">
                                     </form>
                                     <hr>
                                     <div class="text-center">

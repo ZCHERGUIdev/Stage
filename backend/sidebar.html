@@ -21,13 +21,15 @@
 
     <!-- Divider -->
     <hr class="sidebar-divider">
-
+    <?php if(isset($_SESSION['admin_id'])){
+        if($_SESSION['admin_id']==1){ ?>
     <!-- Nav Item - Tables -->
     <li class="nav-item">
         <a class="nav-link" href="admins.php">
             <i class="fas fa-fw fa-table"></i>
             <span>Administrateurs</span></a>
     </li>
+    <?php } ?>
 
     <!-- Nav Item - Tables -->
     <li class="nav-item">
@@ -35,6 +37,16 @@
             <i class="fas fa-fw fa-table"></i>
             <span>Utilisateurs</span></a>
     </li>
+    <?php } ?>
+
+    <?php if(isset($_SESSION['user_id'])){ ?>
+    <!-- Nav Item - Tables -->
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Profil</span></a>
+    </li>
+    <?php } ?>
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
