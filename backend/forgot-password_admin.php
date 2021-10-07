@@ -1,3 +1,39 @@
+<?php
+include_once('connect.php');
+
+session_start();
+
+if(isset($_SESSION['admin_id'])){
+    header('location:dashboard.php');
+}
+
+if(isset($_POST['submit'])){
+    $email=$_POST['email'];
+
+    $q="SELECT * FROM `admin` WHERE `email`='$email' and archived=0";
+    //echo $q; exit();
+    $r=mysqli_query($dbc,$q);
+    $num=mysqli_num_rows($r);
+
+    if($num==1){
+        $row=mysqli_fetch_assoc($r);
+
+        $token=$row['token'];
+        $message="
+            Veuillez cliquer sur le lien ci-dessous:
+            http://localhost/stage/backend/reset_password_admin.php?email=".$email."&token=".$token;
+        
+            if(mail($email,"Resto",$message)){
+                header('Location: forgot-password_admin.php?success');
+              }
+
+    }else{
+        $msg="Ce compte n'existe pas";
+    }
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -41,7 +77,20 @@
                                         <h1 class="h4 text-gray-900 mb-2">Mot de passe oublié?</h1>
                                         <p class="mb-4">Nous comprenons, il se passe des choses. Entrez simplement votre adresse e-mail ci-dessous et nous vous enverrons un lien pour réinitialiser votre mot de passe !</p>
                                     </div>
-                                    <form class="user">
+
+                                    <?php if(isset($_GET['success'])){ ?>
+                                        <div class="alert alert-success">
+                                        <strong>Info!</strong> Le lien de récupération du mot de passe a été envoyé, vérifiez votre email
+                                        </div>
+                                    <?php } ?>
+
+                                    <?php if(isset($_GET['error'])){ ?>
+                                        <div class="alert alert-danger">
+                                        <strong>Info!</strong> Faites attention
+                                        </div>
+                                    <?php } ?>
+
+                                    <form class="user" action="forgot-password_admin.php" method="post">
                                         <div class="form-group">
                                             <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required>
                                         </div>

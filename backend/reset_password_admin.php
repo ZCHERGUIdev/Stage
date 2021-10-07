@@ -7,37 +7,36 @@ if(isset($_SESSION['admin_id'])){
     header('location:dashboard.php');
 }
 
-if(isset($_POST['submit'])){
-    $email=$_POST['email'];
-    $password=$_POST['password'];
+if (!isset($_GET['email']) || !isset($_GET['token'])) {
+    header('Location: forgot-password_admin.php?error');
+} else {
+        $email = $_GET['email'];
+        $token = $_GET['token'];
 
-    $password=md5($password);
+        $q="SELECT * FROM `admin` WHERE `email`='$email' and `token`='$token'";
+        $r=mysqli_query($dbc,$q);
+        $num=mysqli_num_rows($r);
 
-    $q="SELECT * FROM `admin` WHERE `email`='$email' and `password`='$password'";
-    $r=mysqli_query($dbc,$q);
-    $num=mysqli_num_rows($r);
-
-    if($num==1){
-        $row=mysqli_fetch_assoc($r);
-
-        if($row['active']==1){
-            if($row['archived']==0){
-                $_SESSION['admin_id']=$row['id'];
-                $_SESSION['admin_fullname']=$row['fullname'];
-                $_SESSION['admin_phone']=$row['phone'];
-                $_SESSION['admin_email']=$row['email'];
-                header('location:dashboard.php');
-            }else{
-                $msg="dsl ce compte est supprimé";
-            }
+        if($num==1){
+            if(isset($_POST['submit'])){
+                $password=$_POST['password'];
+                $cpassword=$_POST['cpassword'];
+              
+                    if($password==$cpassword){
+                      $password=md5($password);
+                      $q="UPDATE `admin` SET `password`='$password' WHERE email='$email'";
+                      $r=mysqli_query($dbc,$q);
+                      //$msg="Le mot de passe a été changé avec succès";
+                      header('Location: login_admin.php?pass_change');
+                    }else{
+                      $msg="Les deux mots de passe ne sont pas identiques";
+                    }
+              }
         }else{
-            $msg="svp confirmer votre email";
+            header('Location: forgot-password_admin.php?error');
         }
 
-    }else{
-        $msg="Erreur dans l'adresse mail ou dans mot de passe";
-    }
-
+        
 }
 ?>
 
@@ -52,7 +51,7 @@ if(isset($_POST['submit'])){
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Connexion administrateur</title>
+    <title>Mot de passe oublié?</title>
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -81,7 +80,8 @@ if(isset($_POST['submit'])){
                             <div class="col-lg">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Connexion administrateur</h1>
+                                        <h1 class="h4 text-gray-900 mb-2">Mot de passe oublié?</h1>
+                                        <p class="mb-4">Nous comprenons, il se passe des choses. Entrez simplement votre adresse e-mail ci-dessous et nous vous enverrons un lien pour réinitialiser votre mot de passe !</p>
                                     </div>
 
                                     <?php if(isset($msg)){ ?>
@@ -92,31 +92,29 @@ if(isset($_POST['submit'])){
 
                                     <?php if(isset($_GET['success'])){ ?>
                                         <div class="alert alert-success">
-                                        <strong>Info!</strong> Votre compte a été activé, vous pouvez vous connecter maintenant
+                                        <strong>Info!</strong> Le lien de récupération du mot de passe a été envoyé, vérifiez votre email
                                         </div>
                                     <?php } ?>
 
-                                    <?php if(isset($_GET['pass_change'])){ ?>
-                                        <div class="alert alert-success">
-                                        <strong>Info!</strong> Mot de passe modifié avec succès, vous pouvez vous connecter maintenant
-                                        </div>
-                                    <?php } ?>
+                                    
 
-                                    <form class="user" action="login_admin.php" method="post">
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required>
+                                    <form class="user" action="reset_password_admin.php?email=<?= $email ?>&token=<?= $token ?>" method="post">
+
+                                    <div class="form-group">
+                                            <input type="password" class="form-control form-control-user" placeholder="Nouveau mot de passe" name="password" required>
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control form-control-user" placeholder="Mot de passe" name="password" required>
+                                            <input type="password" class="form-control form-control-user" placeholder="Confirmation mot de passe" name="cpassword" required>
                                         </div>
-                                        <input type="submit" name="submit" class="btn btn-primary btn-user btn-block" value="S'identifier">
+                                        
+                                        <input type="submit" name="submit" class="btn btn-success btn-user btn-block" value="Changer mot de passe">
                                     </form>
                                     <hr>
                                     <div class="text-center">
-                                        <a class="small" href="forgot-password_admin.php">Mot de passe oublié?</a>
+                                        <a class="small" href="index.php">Page d'accueil</a>
                                     </div>
                                     <div class="text-center">
-                                        <a class="small" href="index.php">Page d'accueil</a>
+                                        <a class="small" href="login_admin.php">Vous avez déjà un compte? Connexion!</a>
                                     </div>
                                 </div>
                             </div>
