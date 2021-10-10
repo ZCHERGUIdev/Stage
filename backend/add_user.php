@@ -33,8 +33,14 @@ if(isset($_POST['submit'])){
 
             if(mail($email,"Resto",$message)){
                 $q="INSERT INTO `user`(`fullname`, `phone`, `email`, `password`, `token`) VALUES ('$fullname', '$phone', '$email', '$password', '$token')";
-              $r=mysqli_query($dbc,$q);
+                $r=mysqli_query($dbc,$q);
+                $user_id = mysqli_insert_id($dbc);
               if($r){
+                $from_date=date("Y-m-d H:i:s");
+                $to_date=date('Y-m-d H:i:s', strtotime($from_date. ' + 1 months'));
+                $q1="INSERT INTO `subscription`(`user_id`,`from_date`,`to_date`) VALUES ('$user_id','$from_date','$to_date')";
+                $r1=mysqli_query($dbc,$q1);
+
                 header('Location: users.php?success');
               }else{
                 $msg="Il y a un problème pendant le processus d'inscription";

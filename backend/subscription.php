@@ -9,30 +9,6 @@ if(isset($_SESSION['admin_id'])){
 }else{
     header('location:login_admin.php');
 }
-
-if(isset($_POST['submit'])){
-    $user_id=$_POST['user_id'];
-    $amount=$_POST['amount'];
-    $dayPrice=$_POST['dayPrice'];
-    $days=$amount/$dayPrice;
-
-    $q="SELECT * FROM `subscription` WHERE `user_id`='$user_id'";
-    $r=mysqli_query($dbc,$q);
-    $row=mysqli_fetch_assoc($r);
-    $subscription_id=$row['id'];
-
-    $q2="INSERT INTO `payment`(`sub_id`, `amount`, `dayPrice`, `days`) VALUES ('$subscription_id', '$amount', '$dayPrice', '$days')";
-    $r2=mysqli_query($dbc,$q2);
-
-    $getSubscriptionInfo=getInfoById('subscription',$subscription_id);
-    $to_date=date('Y-m-d H:i:s', strtotime($getSubscriptionInfo['to_date']. ' + '.$days.' days'));
-    
-    $q3="UPDATE `subscription` SET `to_date`='$to_date' WHERE id='$subscription_id'";
-    $r3=mysqli_query($dbc,$q3);
-
-    $msg="Abonné avec succès";
-
-}
 ?>
 
 <!DOCTYPE html>
@@ -46,7 +22,7 @@ if(isset($_POST['submit'])){
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Utilisateurs</title>
+    <title>Abonnements</title>
 
     <!-- Custom fonts for this template -->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -84,7 +60,7 @@ if(isset($_POST['submit'])){
                                     
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Utilisateurs</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Abonnements</h1>
 
                     <?php if(isset($_GET['success'])){ ?>
                                         <div class="alert alert-success">
@@ -92,19 +68,12 @@ if(isset($_POST['submit'])){
                                         </div>
                                     <?php } ?>
 
-                                    <?php if(isset($msg)){ ?>
-                                        <div class="alert alert-success">
-                                        <strong>Info!</strong> <?= $msg ?>
-                                        </div>
-                                    <?php } ?>
-
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <a href="add_user.php">
-                            <h6 class="m-0 font-weight-bold text-primary">+ Ajouter un utilisateur</h6>
-                            </a>
+                        <h6 class="m-0 font-weight-bold text-primary">Abonnements</h6>
                         </div>
+
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
@@ -113,10 +82,10 @@ if(isset($_POST['submit'])){
                                             <th>#</th>
                                             <th>Nom complet</th>
                                             <th>Numéro de téléphone</th>
-                                            <th>Adresse email</th>
-                                            <th>Date</th>
-                                            <th>Status</th>
-                                            <th>subs</th>
+                                            <th>De</th>
+                                            <th>à</th>
+                                            <th>il rest</th>
+                                            <th>Modifier</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
@@ -124,72 +93,83 @@ if(isset($_POST['submit'])){
                                             <th>#</th>
                                             <th>Nom complet</th>
                                             <th>Numéro de téléphone</th>
-                                            <th>Adresse email</th>
-                                            <th>Date</th>
-                                            <th>Status</th>
-                                            <th>subs</th>
+                                            <th>De</th>
+                                            <th>à</th>
+                                            <th>il rest</th>
+                                            <th>Modifier</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
                                         <?php
-                                        $q="SELECT * FROM `user` where archived=0";
+                                        $q="SELECT * FROM `subscription`";
                                         $r=mysqli_query($dbc,$q);
                                         while($row=mysqli_fetch_assoc($r)){
-                                            
+                                            $id=$row['user_id'];
+                                            $getSubscriptionInfo=getInfoById('user',$id);
                                         ?>
                                         <tr>
                                             <td><?= $row['id'] ?></td>
-                                            <td><?= $row['fullname'] ?></td>
-                                            <td><?= $row['phone'] ?></td>
-                                            <td><?= $row['email'] ?></td>
-                                            <td><?= $row['date'] ?></td>
-                                            <?php
-                                            if($row['active']==0){ ?>
-                                            <td><h5><span class="badge badge-danger">Non-active</span></h5></td>
-                                            <?php }else{ ?>
-                                                <td><h5><span class="badge badge-success">Active</span></h5></td>
-                                            <?php } ?>
-                                            <td><button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#myModal<?= $row['id'] ?>">Ajouter un abonnement</button></td>
+                                            <td><?= $getSubscriptionInfo['fullname'] ?></td>
+                                            <td><?= $getSubscriptionInfo['phone'] ?></td>
+                                            <td><?= $row['from_date'] ?></td>
+                                            <td><?= $row['to_date'] ?></td>
 
-<!-- The Modal -->
-  <div class="modal fade" id="myModal<?= $row['id'] ?>">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-      
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <h4 class="modal-title">Ajouter un abonnement</h4>
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-        
-        <!-- Modal body -->
-        <div class="modal-body">
-            <form action="users.php" method="post">
-                <div class="form-group">
-                    <label>Prix ​​par jour</label>
-                    <input type="number" class="form-control" value="100" name="dayPrice" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Le montant payé</label>
-                    <input type="number" class="form-control" placeholder="Par exemple : 1000 DA" name="amount" required>
-                </div>
-
-                <input type="hidden" value="<?= $row['id'] ?>" name="user_id">
-            
-            <input type="submit" name="submit" class="btn btn-primary" value="Ajouter un abonnement">
-            </form>
-        </div>
-        
-        <!-- Modal footer -->
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
-        
-      </div>
-    </div>
-  </div>
-
+<?php
+// Declare and define two dates
+$date1 = strtotime(date("Y-m-d H:i:s")); 
+$date2 = strtotime($row['to_date']); 
+  
+// Formulate the Difference between two dates
+$diff = abs($date2 - $date1); 
+  
+  
+// To get the year divide the resultant date into
+// total seconds in a year (365*60*60*24)
+$years = floor($diff / (365*60*60*24)); 
+  
+  
+// To get the month, subtract it with years and
+// divide the resultant date into
+// total seconds in a month (30*60*60*24)
+$months = floor(($diff - $years * 365*60*60*24)
+                               / (30*60*60*24)); 
+  
+  
+// To get the day, subtract it with years and 
+// months and divide the resultant date into
+// total seconds in a days (60*60*24)
+$days = floor(($diff - $years * 365*60*60*24 - 
+             $months*30*60*60*24)/ (60*60*24));
+  
+  
+// To get the hour, subtract it with years, 
+// months & seconds and divide the resultant
+// date into total seconds in a hours (60*60)
+$hours = floor(($diff - $years * 365*60*60*24 
+       - $months*30*60*60*24 - $days*60*60*24)
+                                   / (60*60)); 
+  
+  
+// To get the minutes, subtract it with years,
+// months, seconds and hours and divide the 
+// resultant date into total seconds i.e. 60
+$minutes = floor(($diff - $years * 365*60*60*24 
+         - $months*30*60*60*24 - $days*60*60*24 
+                          - $hours*60*60)/ 60); 
+  
+  
+// To get the minutes, subtract it with years,
+// months, seconds, hours and minutes 
+$seconds = floor(($diff - $years * 365*60*60*24 
+         - $months*30*60*60*24 - $days*60*60*24
+                - $hours*60*60 - $minutes*60)); 
+  
+// Print the result
+printf("<td>%d ans, %d mois, %d jours, %d heures, "
+     . "%d minutes, %d seconds", $years, $months,
+             $days, $hours, $minutes, $seconds."<td>");
+?>
+                                        <td><button type="button" class="btn btn-success btn-block">Modifier</button></td>    
                                         </tr>
                                         <?php } ?>
                                     </tbody>

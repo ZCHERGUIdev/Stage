@@ -104,10 +104,10 @@ if(isset($_POST['submit'])){
 
                                     <form class="user" action="login_admin.php" method="post">
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required>
+                                            <input type="email" class="form-control form-control-user" placeholder="Entrer l'adresse e-mail..." name="email" required value="belalia.alaaeddine@gmail.com">
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control form-control-user" placeholder="Mot de passe" name="password" required>
+                                            <input type="password" class="form-control form-control-user" placeholder="Mot de passe" name="password" required value="123">
                                         </div>
                                         <input type="submit" name="submit" class="btn btn-primary btn-user btn-block" value="S'identifier">
                                     </form>
