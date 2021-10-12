@@ -85,7 +85,6 @@ if(isset($_SESSION['admin_id'])){
                                             <th>De</th>
                                             <th>à</th>
                                             <th>il rest</th>
-                                            <th>Modifier</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
@@ -96,12 +95,26 @@ if(isset($_SESSION['admin_id'])){
                                             <th>De</th>
                                             <th>à</th>
                                             <th>il rest</th>
-                                            <th>Modifier</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
                                         <?php
-                                        $q="SELECT * FROM `subscription`";
+                                        $q0="SELECT * FROM `subscription`";
+                                        $r0=mysqli_query($dbc,$q0);
+                                        while($row0=mysqli_fetch_assoc($r0)){
+                                            $date1 = date("Y-m-d H:i:s"); 
+                                            $date2 = $row0['to_date'];
+                                            $id = $row0['id'];
+
+                                            if($date1 > $date2){
+                                                $qq="UPDATE `subscription` SET `status`=0 WHERE id='$id'";
+                                            }else{
+                                                $qq="UPDATE `subscription` SET `status`=1 WHERE id='$id'";
+                                            }
+                                            $rr=mysqli_query($dbc,$qq);
+                                        }
+
+                                        $q="SELECT * FROM `subscription` where status=1";
                                         $r=mysqli_query($dbc,$q);
                                         while($row=mysqli_fetch_assoc($r)){
                                             $id=$row['user_id'];
@@ -117,7 +130,11 @@ if(isset($_SESSION['admin_id'])){
 <?php
 // Declare and define two dates
 $date1 = strtotime(date("Y-m-d H:i:s")); 
-$date2 = strtotime($row['to_date']); 
+$date2 = strtotime($row['to_date']);
+
+
+$date1 = strtotime(date("Y-m-d H:i:s")); 
+$date2 = strtotime($row['to_date']);
   
 // Formulate the Difference between two dates
 $diff = abs($date2 - $date1); 
@@ -169,7 +186,7 @@ printf("<td>%d ans, %d mois, %d jours, %d heures, "
      . "%d minutes, %d seconds", $years, $months,
              $days, $hours, $minutes, $seconds."<td>");
 ?>
-                                        <td><button type="button" class="btn btn-success btn-block">Modifier</button></td>    
+                                        <!-- <td><button type="button" class="btn btn-success btn-block">Modifier</button></td>     -->
                                         </tr>
                                         <?php } ?>
                                     </tbody>

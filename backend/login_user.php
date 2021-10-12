@@ -22,6 +22,16 @@ if(isset($_POST['submit'])){
 
         if($row['active']==1){
             if($row['archived']==0){
+                $user_id=$row['id'];
+                $quser="SELECT * FROM `subscription` where user_id='$user_id'";
+                $ruser=mysqli_query($dbc,$quser);
+                $rowuser=mysqli_fetch_assoc($ruser);
+                if($rowuser['status']==1){
+                    $_SESSION['user_subscription']=1;
+                }else{
+                    $_SESSION['user_subscription']=0;
+                }
+
                 $_SESSION['user_id']=$row['id'];
                 $_SESSION['user_fullname']=$row['fullname'];
                 $_SESSION['user_phone']=$row['phone'];
